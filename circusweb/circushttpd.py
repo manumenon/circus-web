@@ -13,7 +13,7 @@ from functools import wraps
 from circusweb import logger, __version__
 from circus.exc import CallError
 from circus.util import LOG_LEVELS, configure_logger
-from circus.py3compat import b
+
 from zmq.eventloop import ioloop
 from circusweb.util import AutoDiscovery, run_command
 from circusweb.session import (SessionManager, get_controller,
@@ -86,7 +86,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def prepare(self):
         session_id = self.get_secure_cookie('session_id')
         if not session_id or not SessionManager.get(session_id):
-            session_id = b(uuid4().hex)
+            session_id = uuid4().hex.encode()
             session = SessionManager.new(session_id)
             self.set_secure_cookie('session_id', session_id)
         else:
