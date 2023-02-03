@@ -6,7 +6,7 @@ from zmq.utils.jsonapi import jsonmod as json
 from zmq.eventloop.zmqstream import ZMQStream
 
 from circus.exc import CallError
-from circus.py3compat import string_types, b
+
 from circus.util import get_connection
 from circus.client import CircusClient, make_message
 
@@ -52,14 +52,14 @@ class AsynchronousCircusClient(CircusClient):
         return self.call(make_message(command, **props), callback)
 
     def call(self, cmd, callback):
-        if not isinstance(cmd, string_types):
+        if not isinstance(cmd, str):
             try:
                 cmd = json.dumps(cmd)
             except ValueError as e:
                 raise CallError(str(e))
 
         socket = self.context.socket(zmq.DEALER)
-        socket.setsockopt(zmq.IDENTITY, b(uuid.uuid4().hex))
+        socket.setsockopt(zmq.IDENTITY, uuid.uuid4().hex.encode())
         socket.setsockopt(zmq.LINGER, 0)
         get_connection(socket, self.endpoint, self.ssh_server,
                        self.ssh_keyfile)
@@ -84,7 +84,7 @@ class AsynchronousCircusClient(CircusClient):
             stream.on_recv(recv_callback)
 
         try:
-            socket.send(b(cmd))
+            socket.send(cmd.encode())
         except zmq.ZMQError as e:
             raise CallError(str(e))
 
